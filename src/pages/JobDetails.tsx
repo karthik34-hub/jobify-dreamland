@@ -4,18 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
 import { useToast } from "@/hooks/use-toast";
 import { JobListing, User, Application } from '@/lib/types';
 import Navbar from '@/components/Navbar';
 import AnimatedContainer from '@/components/AnimatedContainer';
+import ApplicationForm from '@/components/ApplicationForm';
 import { ArrowLeft, Briefcase, MapPin, Calendar, Building, Send, Share2, Bookmark } from 'lucide-react';
 
 // Mock data for jobs
@@ -121,8 +114,7 @@ const JobDetails = () => {
   const [user, setUser] = useState<User | null>(null);
   const [job, setJob] = useState<JobListing | null>(null);
   const [hasApplied, setHasApplied] = useState(false);
-  const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApplyFormOpen, setIsApplyFormOpen] = useState(false);
 
   // Get user from session storage
   useEffect(() => {
@@ -177,23 +169,34 @@ const JobDetails = () => {
   }, [job, user]);
 
   const handleApply = () => {
-    setIsApplyDialogOpen(true);
+    setIsApplyFormOpen(true);
   };
 
-  const handleSubmitApplication = () => {
-    setIsSubmitting(true);
+  const handleSubmitApplication = (application: Partial<Application>) => {
+    // In a real app, this would send the application to an API
+    setHasApplied(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsApplyDialogOpen(false);
-      setHasApplied(true);
-      
-      toast({
-        title: "Application submitted",
-        description: "Your application has been successfully submitted.",
-      });
-    }, 1500);
+    // Update the user in session storage to reflect the application
+    const updatedApplications = [
+      {
+        id: 'app_' + Date.now(),
+        jobId: job?.id || '',
+        userId: user?.id || '',
+        status: 'applied',
+        appliedAt: new Date().toISOString(),
+        jobTitle: job?.title || '',
+        companyName: job?.company || '',
+        resumeId: application.resumeId,
+        coverLetter: application.coverLetter,
+      },
+    ];
+    
+    // Here you would typically update the user's applications in your backend
+    
+    toast({
+      title: "Application submitted",
+      description: "Your application has been successfully submitted.",
+    });
   };
 
   const handleShare = () => {
@@ -422,48 +425,14 @@ const JobDetails = () => {
         </div>
       </main>
       
-      <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Apply for {job.title}</DialogTitle>
-            <DialogDescription>
-              Submit your application for this position at {job.company}.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <p className="text-sm mb-4">
-              Your profile information will be shared with the employer:
-            </p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Name:</span>
-                <span className="font-medium">{user?.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Email:</span>
-                <span className="font-medium">{user?.email}</span>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsApplyDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmitApplication} 
-              disabled={isSubmitting}
-              className="button-effect"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Application'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Application Form */}
+      <ApplicationForm
+        isOpen={isApplyFormOpen}
+        onClose={() => setIsApplyFormOpen(false)}
+        job={job}
+        user={user}
+        onSubmit={handleSubmitApplication}
+      />
     </div>
   );
 };

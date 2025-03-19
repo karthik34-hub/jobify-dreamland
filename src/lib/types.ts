@@ -4,6 +4,14 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  resume?: Resume;
+}
+
+export interface Resume {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  uploadedAt: string;
 }
 
 export interface JobListing {
@@ -31,6 +39,8 @@ export interface Application {
   appliedAt: string;
   jobTitle: string;
   companyName: string;
+  resumeId?: string;
+  coverLetter?: string;
 }
 
 export interface FilterOptions {
